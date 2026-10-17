@@ -9,13 +9,13 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
-from ultralytics.nn. SwinTransformer import SwinTransformer
-from ultralytics.nn. Involution import Involution
-from ultralytics.nn.LDConv import LDConv
-from ultralytics.nn.StokenAttention import StokenAttention
+
+from ultralytics.nn.MSCU6 import MSCU6
+from ultralytics.nn.C2f_SIABottleneck import C2f_SIABottleneck
+from ultralytics.nn.RFMGAMConv import RFMGAMConv
+
+
 from ultralytics.nn.autobackend import check_class_names
-from ultralytics.nn.vanillanet import vanillanetBlock
-from ultralytics.nn.C3k2_RepViTBlock import C3k2_RepViTBlock
 from ultralytics.nn.modules import (
     AIFI,
     C1,
@@ -78,28 +78,8 @@ from ultralytics.nn.modules import (
     YOLOESegment26,
     v10Detect,
 )
-from ultralytics.nn.se import SEAttention
-from ultralytics.nn.spdconv import space_to_depth
-from ultralytics.nn.ShuffleNetV2 import ShuffleNetV2, Conv_maxpool
-from ultralytics.nn. MobileOne import MobileOneBlock
 from ultralytics.utils import DEFAULT_CFG_DICT, LOGGER, YAML, colorstr, emojis
-from ultralytics.nn.BiFormer import BiLevelRoutingAttention,Attention,AttentionLePE
-from ultralytics.nn.AKConv import AKConv
-from ultralytics.nn.PatchExpand import PatchExpand
-from ultralytics.nn.orepa import OREPA
-from ultralytics.nn. HorBlock import HorBlock
-from ultralytics.nn.RepConv import RepConv
-from ultralytics.nn.RFAConv import RFAConv
-from ultralytics.nn.RepViTblock import RepViTblock
-from ultralytics.nn.AIxueshujiaojiaoshou import *
-from ultralytics.nn.Glod import  IFM,SimFusion_3in,SimFusion_4in,InjectionMultiSum_Auto_pool,PyramidPoolAgg,TopBasicLayer,AdvPoolFusion
-from ultralytics.nn. EfficientNetv2 import MBConv,FusedMBConv,stem
-from ultralytics.nn.EMA_attention import EMA_attention
-from ultralytics.nn.ODConv import ODConv
-from ultralytics.nn. RepLKNet import RepLKNet_Stem, RepLKNet_stage1, RepLKNet_stage2, RepLKNet_stage3, RepLKNet_stage4
-from ultralytics.nn.CARAFE import CARAFE#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
 from ultralytics.utils.checks import check_requirements, check_suffix, check_yaml
-from ultralytics.nn. SlimNeck import VoVGSCSP, VoVGSCSPC, GSConv
 from ultralytics.utils.loss import (
     E2ELoss,
     PoseLoss26,
@@ -109,16 +89,9 @@ from ultralytics.utils.loss import (
     v8PoseLoss,
     v8SegmentationLoss,
 )
-from ultralytics.nn.C2f_Faster import C2f_Faster,C3_Faster
-from ultralytics.nn.CAFMAttention import CAFMAttention
-from ultralytics.nn.BoTNet import BoTNet
 from ultralytics.utils.ops import make_divisible
 from ultralytics.utils.patches import torch_load
-from ultralytics.nn.DSConv import DSConv,DySnakeConv,C2f_DySnakeConv,Bottleneck_DySnakeConv
 from ultralytics.utils.plotting import feature_visualization
-from ultralytics.nn.CBAM import CBAM
-from ultralytics.nn.AIxueshujiaojiaoshou import *
-from ultralytics.nn.ContextAggregation import ContextAggregation
 from ultralytics.utils.torch_utils import (
     fuse_conv_and_bn,
     fuse_deconv_and_bn,
@@ -130,7 +103,7 @@ from ultralytics.utils.torch_utils import (
     time_sync,
 )
 
-from ultralytics.nn.v9 import SPPELAN,ADown,AConv,Concat_bifpn,Concat_BiFPN
+
 class BaseModel(torch.nn.Module):
     """Base class for all YOLO models in the Ultralytics family.
 
@@ -393,11 +366,11 @@ class DetectionModel(BaseModel):
 
     Examples:
         Initialize a detection model
-        >>> model = DetectionModel("yolo11n.yaml", ch=3, nc=80)
+        >>> model = DetectionModel("yolo26n.yaml", ch=3, nc=80)
         >>> results = model.predict(image_tensor)
     """
 
-    def __init__(self, cfg="yolo11n.yaml", ch=3, nc=None, verbose=True):
+    def __init__(self, cfg="yolo26n.yaml", ch=3, nc=None, verbose=True):
         """Initialize the YOLO detection model with the given config and parameters.
 
         Args:
@@ -538,11 +511,11 @@ class OBBModel(DetectionModel):
 
     Examples:
         Initialize an OBB model
-        >>> model = OBBModel("yolo11n-obb.yaml", ch=3, nc=80)
+        >>> model = OBBModel("yolo26n-obb.yaml", ch=3, nc=80)
         >>> results = model.predict(image_tensor)
     """
 
-    def __init__(self, cfg="yolo11n-obb.yaml", ch=3, nc=None, verbose=True):
+    def __init__(self, cfg="yolo26n-obb.yaml", ch=3, nc=None, verbose=True):
         """Initialize YOLO OBB model with given config and parameters.
 
         Args:
@@ -570,11 +543,11 @@ class SegmentationModel(DetectionModel):
 
     Examples:
         Initialize a segmentation model
-        >>> model = SegmentationModel("yolo11n-seg.yaml", ch=3, nc=80)
+        >>> model = SegmentationModel("yolo26n-seg.yaml", ch=3, nc=80)
         >>> results = model.predict(image_tensor)
     """
 
-    def __init__(self, cfg="yolo11n-seg.yaml", ch=3, nc=None, verbose=True):
+    def __init__(self, cfg="yolo26n-seg.yaml", ch=3, nc=None, verbose=True):
         """Initialize Ultralytics YOLO segmentation model with given config and parameters.
 
         Args:
@@ -605,11 +578,11 @@ class PoseModel(DetectionModel):
 
     Examples:
         Initialize a pose model
-        >>> model = PoseModel("yolo11n-pose.yaml", ch=3, nc=1, data_kpt_shape=(17, 3))
+        >>> model = PoseModel("yolo26n-pose.yaml", ch=3, nc=1, data_kpt_shape=(17, 3))
         >>> results = model.predict(image_tensor)
     """
 
-    def __init__(self, cfg="yolo11n-pose.yaml", ch=3, nc=None, data_kpt_shape=(None, None), verbose=True):
+    def __init__(self, cfg="yolo26n-pose.yaml", ch=3, nc=None, data_kpt_shape=(None, None), verbose=True):
         """Initialize Ultralytics YOLO Pose model.
 
         Args:
@@ -651,11 +624,11 @@ class ClassificationModel(BaseModel):
 
     Examples:
         Initialize a classification model
-        >>> model = ClassificationModel("yolo11n-cls.yaml", ch=3, nc=1000)
+        >>> model = ClassificationModel("yolo26n-cls.yaml", ch=3, nc=1000)
         >>> results = model.predict(image_tensor)
     """
 
-    def __init__(self, cfg="yolo11n-cls.yaml", ch=3, nc=None, verbose=True):
+    def __init__(self, cfg="yolo26n-cls.yaml", ch=3, nc=None, verbose=True):
         """Initialize ClassificationModel with YAML, channels, number of classes, verbose flag.
 
         Args:
@@ -1476,7 +1449,7 @@ def torch_safe_load(weight, safe_only=False):
                     f"with https://github.com/ultralytics/yolov5.\nThis model is NOT forwards compatible with "
                     f"YOLOv8 at https://github.com/ultralytics/ultralytics."
                     f"\nRecommend fixes are to train a new model using the latest 'ultralytics' package or to "
-                    f"run a command with an official Ultralytics model, i.e. 'yolo predict model=yolo11n.pt'"
+                    f"run a command with an official Ultralytics model, i.e. 'yolo predict model=yolo26n.pt'"
                 )
             ) from e
         elif e.name == "numpy._core":
@@ -1489,7 +1462,7 @@ def torch_safe_load(weight, safe_only=False):
             f"{weight} appears to require '{e.name}', which is not in Ultralytics requirements."
             f"\nAutoInstall will run now for '{e.name}' but this feature will be removed in the future."
             f"\nRecommend fixes are to train a new model using the latest 'ultralytics' package or to "
-            f"run a command with an official Ultralytics model, i.e. 'yolo predict model=yolo11n.pt'"
+            f"run a command with an official Ultralytics model, i.e. 'yolo predict model=yolo26n.pt'"
         )
         check_requirements(e.name)  # install missing module
         ckpt = torch_load(file, map_location="cpu")
@@ -1581,41 +1554,42 @@ def parse_model(d, ch, verbose=True):
     base_modules = frozenset(
         {
             Classify,
-            Conv,HorBlock,
+            Conv,
             ConvTranspose,
-            GhostConv,RFAConv,
+            GhostConv,
             Bottleneck,
-            GhostBottleneck,SEAttention,
+            GhostBottleneck,
             SPP,
             SPPF,
-            C2fPSA,Involution,
+            C2fPSA,
             C2PSA,
-            DWConv,DASI,
+            DWConv,
             Focus,
-            BottleneckCSP,DualConv,
-            C1,MBConv,FusedMBConv,stem,
-            C2,ContextAggregation,
-            C2f,VoVGSCSP, VoVGSCSPC,GSConv,LDConv,
-            C3k2,MDCR,
-            RepNCSPELAN4,MSFN,
-            ELAN1,CARAFE,CBAM,
-            ADown,EMA_attention,
-            AConv,MobileOneBlock,
-            SPPELAN,CAFMAttention,
-            C2fAttn,RepConv,
-            C3,BoTNet,RepViTblock,
+            BottleneckCSP,
+            C1,
+            C2,
+            C2f,
+            C3k2,
+            RepNCSPELAN4,
+            ELAN1,
+            ADown,
+            AConv,
+            SPPELAN,
+            C2fAttn,
+            C3,
             C3TR,
-            C3Ghost,C2f_Faster,C3_Faster,
-            DSConv, DySnakeConv, C2f_DySnakeConv, Bottleneck_DySnakeConv,
+            C3Ghost,
             torch.nn.ConvTranspose2d,
             DWConvTranspose2d,
             C3x,
-            RepC3,AKConv,
-            PSA,SwinTransformer,
+            RepC3,
+            PSA,
             SCDown,
             C2fCIB,
             A2C2f,
-            C3k2_RepViTBlock,
+            C2f_SIABottleneck,
+            RFMGAMConv,
+            
         }
     )
     repeat_modules = frozenset(  # modules with 'repeat' arguments
@@ -1635,7 +1609,7 @@ def parse_model(d, ch, verbose=True):
             C2fCIB,
             C2PSA,
             A2C2f,
-            C3k2_RepViTBlock,
+            C2f_SIABottleneck,
         }
     )
     for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"]):  # from, number, module, args
@@ -1673,71 +1647,32 @@ def parse_model(d, ch, verbose=True):
                     args.extend((True, 1.2))
             if m is C2fCIB:
                 legacy = False
-        elif m is MobileOneBlock:
-            c1, c2 = ch[f], args[0]
-            c2 = make_divisible(c2 * width, 8)
-            args = [c1, c2, n, *args[1:]]
-        elif m in {Attention,AttentionLePE,BiLevelRoutingAttention}:
-            c2 = ch[f]
-            args=[c2,*args]
-        elif m in [RepLKNet_Stem, RepLKNet_stage1, RepLKNet_stage2, RepLKNet_stage3, RepLKNet_stage4]:
-            c2 = args[0] #详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
-            args = args[1:]
-        elif m in [OREPA]:
-            c2 = ch[f]
-            args = [ch[f], *args]
         elif m is AIFI:
             args = [ch[f], *args]
-        elif m in [ODConv]:
-            c1, c2 = ch[f], args[0]
-            if c2 != nc:  # if not output
-                c2 = make_divisible(c2 * width, 8)
-            args = [c1, c2, *args[1:]]
         elif m in frozenset({HGStem, HGBlock}):
             c1, cm, c2 = ch[f], args[0], args[1]
             args = [c1, cm, c2, *args[2:]]
             if m is HGBlock:
                 args.insert(4, n)  # number of repeats
                 n = 1
-        elif m in {SimFusion_4in, AdvPoolFusion}:
-            c2 = sum(ch[x] for x in f)
-        elif m is SimFusion_3in:
-            c2 = args[0]
-            if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
-                c2 = make_divisible(min(c2, max_channels) * width, 8)
-            args = [[ch[f_] for f_ in f], c2]
-        elif m is IFM: #详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
-            c1 = ch[f]
-            c2 = sum(args[0])
-            args = [c1, *args]
         elif m is ResNetLayer:
             c2 = args[1] if args[3] else args[1] * 4
-        elif m in [ShuffleNetV2,Conv_maxpool]:
-            c1, c2 = ch[f], args[0]
-            if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
-                c2 = make_divisible(c2 * width, 8)
-            args = [c1, c2, *args[1:]]
-        elif m is PatchExpand:
-            args = [ch[f], *args]
-            c2 = ch[f] // 2
-        elif m in [SimAM]:
-            c2 = ch[f]
-            args = [c2, *args]
         elif m is torch.nn.BatchNorm2d:
             args = [ch[f]]
-        elif m in {Concat, Concat_bifpn}:
+
+        
+        elif m is Concat:
             c2 = sum(ch[x] for x in f)
-        elif m is Concat_BiFPN:
-    # 1. 收集所有输入层的通道数，组成一个列表
-    # f 是一个 list，例如 [-1, 6]，ch[x] 获取对应层的输出通道
-    c1 = [ch[x] for x in f] 
-    
-    # 2. 确定输出通道 c2
-    # 如果 YAML 里写了 [512]，则 args[0] 是 512；否则默认取第一层的通道
-    c2 = args[0] if args else c1[0] 
-    
-    # 3. 重新包装 args 传给 Concat_BiFPN 的 __init__
-    args = [c1, c2]
+
+
+
+        elif m is MSCU6:
+            c1 = ch[f]
+            c2 = c1
+            args = [c1, *args]
+
+
+        
         elif m in frozenset(
             {
                 Detect,
@@ -1768,30 +1703,8 @@ def parse_model(d, ch, verbose=True):
             c2 = args[0]
             c1 = ch[f]
             args = [c1, c2, *args[1:]]
-        elif m is PatchExpand:
-            args = [ch[f], *args]
-            c2 = ch[f] // 2
-        elif m is vanillanetBlock:
-             c1, c2 = ch[f], args[0]
-             if c2 != torch.NoneType:
-                 c2 = make_divisible(c2 * width, 8)
-             args = [c1, c2, *args[1:]]
         elif m is CBFuse:
             c2 = ch[f[-1]]
-        elif m is InjectionMultiSum_Auto_pool:
-            c1 = ch[f[0]]
-            c2 = args[0]
-            args = [c1, *args]
-        elif m is PyramidPoolAgg:
-            c2 = args[0]
-            args = [sum([ch[f_] for f_ in f]), *args]
-        elif m is TopBasicLayer:
-            c2 = sum(args[1])
-        elif m is space_to_depth:
-            c2 = 4 * ch[f]
-        elif m is StokenAttention:
-            c2 = ch[f]
-            args = [c2, *args]
         elif m in frozenset({TorchVision, Index}):
             c2 = args[0]
             c1 = ch[f]
