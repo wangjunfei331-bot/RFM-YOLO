@@ -1,6 +1,5 @@
 
-#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
-#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+
 import ast
 import contextlib
 import json
@@ -9,7 +8,7 @@ import platform
 import warnings
 import zipfile
 from collections import OrderedDict, namedtuple
-from copy import copy#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+from copy import copy
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -25,7 +24,7 @@ from IPython.display import display
 from PIL import Image
 from torch.cuda import amp
 
-#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
     # Pad to 'same' shape outputs
@@ -34,7 +33,7 @@ def autopad(k, p=None, d=1):  # kernel, padding, dilation
     if p is None:
         p = k // 2 if isinstance(k, int) else [x // 2 for x in k]  # auto-pad
     return p
-#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+
 
 class Conv(nn.Module):
     # Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)
@@ -109,7 +108,7 @@ class SpatialAttentionModule(nn.Module):
         out = self.act(self.conv2d(out))
         return out
 
-#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+
 #class Concat_BiFPN(nn.Module):
 #    # Concatenate a list of tensors along dimension
 
@@ -495,7 +494,7 @@ class RepNCSP(nn.Module):
 
     def forward(self, x):
         return self.cv3(torch.cat((self.m(self.cv1(x)), self.cv2(x)), 1))
-#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+
 
 class CSPBase(nn.Module):
     # CSP Bottleneck with 3 convolutions
@@ -517,7 +516,7 @@ class SPP(nn.Module):
         super().__init__()
         c_ = c1 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
-        self.cv2 = Conv(c_ * (len(k) + 1), c2, 1, 1)#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+        self.cv2 = Conv(c_ * (len(k) + 1), c2, 1, 1)
         self.m = nn.ModuleList([nn.MaxPool2d(kernel_size=x, stride=1, padding=x // 2) for x in k])
 
     def forward(self, x):
@@ -562,7 +561,7 @@ class ASPP(torch.nn.Module):
         out[-1] = out[-1].expand_as(out[-2])
         out = torch.cat(out, dim=1)
         return out
-#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+
 
 class SPPCSPC(nn.Module):
     # CSP SPP https://github.com/WongKinYiu/CrossStagePartialNetworks
@@ -669,7 +668,7 @@ class Concat(nn.Module):
 
 class Shortcut(nn.Module):
     def __init__(self, dimension=0):
-        super(Shortcut, self).__init__()#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+        super(Shortcut, self).__init__()
         self.d = dimension
 
     def forward(self, x):
@@ -855,7 +854,7 @@ class DetectMultiBackend(nn.Module):
             import tensorrt as trt  # https://developer.nvidia.com/nvidia-tensorrt-download
             check_version(trt.__version__, '7.0.0', hard=True)  # require tensorrt>=7.0.0
             if device.type == 'cpu':
-                device = torch.device('cuda:0')#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+                device = torch.device('cuda:0')
             Binding = namedtuple('Binding', ('name', 'dtype', 'shape', 'data', 'ptr'))
             logger = trt.Logger(trt.Logger.INFO)
             with open(w, 'rb') as f, trt.Runtime(logger) as runtime:
@@ -1024,7 +1023,7 @@ class DetectMultiBackend(nn.Module):
             im = im.cpu().numpy()
             if self.saved_model:  # SavedModel
                 y = self.model(im, training=False) if self.keras else self.model(im)
-            elif self.pb:  # GraphDef#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+            elif self.pb:  
                 y = self.frozen_func(x=self.tf.constant(im))
             else:  # Lite or Edge TPU
                 input = self.input_details[0]
@@ -1159,7 +1158,7 @@ class Detections:
                                 'box': box,
                                 'conf': conf,
                                 'cls': cls,
-                                'label': label,#详细改进流程和操作，请关注B站博主：Ai学术叫叫兽 er,畅享一对一指点迷津，已指导无数家人拿下学术硕果！！！
+                                'label': label,
                                 'im': save_one_box(box, im, file=file, save=save)})
                         else:  # all others
                             annotator.box_label(box, label if labels else '', color=colors(cls))
